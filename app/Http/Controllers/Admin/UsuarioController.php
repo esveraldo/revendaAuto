@@ -40,12 +40,23 @@ class UsuarioController extends Controller
     
     public function papelStore(Request $request, $id)
     {
+        $usuario = User::find($id);
+        $dados = $request->all();
+        $papel = Papel::find($dados['papel_id']);
+        //Metodo no controller de model de usuario
+        $usuario->adicionaPapel($papel);
         
+        return redirect()->back();
     }
     
     public function papelDestroy($id, $papel_id)
     {
+        $usuario = User::find($id);
+        $papel = Papel::find($papel_id);
+        //Metodo no controller de model de usuario
+        $usuario->removePapel($papel);
         
+        return redirect()->back();
     }
             
 
