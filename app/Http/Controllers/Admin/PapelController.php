@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Papel;
+use App\Permissao;
 
 class PapelController extends Controller {
 
@@ -22,6 +23,20 @@ class PapelController extends Controller {
         ];
 
         return view('admin.papel.index', compact('registros', 'caminho'));
+    }
+    
+    public function permissao($id)
+    {
+        $papel = Papel::find($id);
+        $permissao = Permissao::all();
+        
+        $caminhos = [
+            ['link' => '/admin', 'titulo' => 'Admin'],
+            ['link' => '{{ route(papel.index) }}', 'titulo' => 'Papel'],
+            ['link' => '', 'titulo' => 'Permissoes'],
+        ];
+        
+        return view('admin.papel.permissoes', compact('papel', 'permissao', 'caminhos'));
     }
 
     /**
