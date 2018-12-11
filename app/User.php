@@ -35,7 +35,8 @@ class User extends Authenticatable
 
     public function eAdmin()
     {
-        return $this->id == 3;
+        //return $this->id == 3;
+        return $this->existePapel('Admin');
     }
     
     public function papel()
@@ -72,6 +73,12 @@ class User extends Authenticatable
         }
         
         return $this->papel()->detach($papel);
+    }
+    
+    public function temUmPapelDeste($papeis)
+    {
+        $userPapeis = $this->papel();
+        return $papeis->intersect($userPapeis)->count();
     }
 
 }
