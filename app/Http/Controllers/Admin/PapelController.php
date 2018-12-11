@@ -6,52 +6,90 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Papel;
 use App\Permissao;
+use Illuminate\Support\Facades\Gate;
 
-class PapelController extends Controller {
-
+class PapelController extends Controller
+{
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index() {
-        $registros = Papel::all();
+    public function index()
+    {
 
-        $caminho = [
-            ['link' => '/admin', 'titulo' => 'Admin'],
-            ['link' => '', 'titulo' => 'Papeis'],
-        ];
+//      if(Gate::denies('papel-view')){
+//        abort(403,"Não autorizado!");
+//      }
 
-        return view('admin.papel.index', compact('registros', 'caminho'));
+      $registros = Papel::all();
+      $caminhos = [
+      ['url'=>'/admin','titulo'=>'Admin'],
+      ['url'=>'','titulo'=>'Papéis']
+      ];
+      return view('admin.papel.index',compact('registros','caminhos'));
     }
-    
+
     public function permissao($id)
     {
-        $papel = Papel::find($id);
-        $permissao = Permissao::all();
-        
-        $caminhos = [
-            ['link' => '/admin', 'titulo' => 'Admin'],
-            ['link' => '{{ route(papel.index) }}', 'titulo' => 'Papel'],
-            ['link' => '', 'titulo' => 'Permissoes'],
-        ];
-        
-        return view('admin.papel.permissoes', compact('papel', 'permissao', 'caminhos'));
+//      if(Gate::denies('papel-edit')){
+//        abort(403,"Não autorizado!");
+//      }
+
+      $papel = Papel::find($id);
+      $permissao = Permissao::all();
+      $caminhos = [
+          ['url'=>'/admin','titulo'=>'Admin'],
+          ['url'=>route('papeis.index'),'titulo'=>'Papéis'],
+          ['url'=>'','titulo'=>'Permissões'],
+      ];
+      return view('admin.papel.permissao',compact('papel','permissao','caminhos'));
     }
+
+    public function permissaoStore(Request $request,$id)
+    {
+//        if(Gate::denies('papel-edit')){
+//          abort(403,"Não autorizado!");
+//        }
+        $papel = Papel::find($id);
+        $dados = $request->all();
+        $permissao = Permissao::find($dados['permissao_id']);
+        $papel->adicionaPermissao($permissao);
+        return redirect()->back();
+    }
+
+    public function permissaoDestroy($id,$permissao_id)
+    {
+//      if(Gate::denies('papel-edit')){
+//        abort(403,"Não autorizado!");
+//      }
+
+      $papel = Papel::find($id);
+      $permissao = Permissao::find($permissao_id);
+      $papel->removePermissao($permissao);
+      return redirect()->back();
+    }
+
+
 
     /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function create() {
-        $caminhos = [
-            ['url' => '/admin', 'titulo' => 'Admin'],
-            ['url' => route('papeis.index'), 'titulo' => 'Papéis'],
-            ['url' => '', 'titulo' => 'Adicionar']
-        ];
+    public function create()
+    {
+//      if(Gate::denies('papel-create')){
+//        abort(403,"Não autorizado!");
+//      }
 
-        return view('admin.papel.adicionar', compact('caminhos'));
+      $caminhos = [
+      ['url'=>'/admin','titulo'=>'Admin'],
+      ['url'=>route('papeis.index'),'titulo'=>'Papéis'],
+      ['url'=>'','titulo'=>'Adicionar']
+      ];
+
+      return view('admin.papel.adicionar',compact('caminhos'));
     }
 
     /**
@@ -60,14 +98,19 @@ class PapelController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request) {
-        if ($request['nome'] && $request['nome'] != "Admin") {
-            Papel::create($request->all());
+    public function store(Request $request)
+    {
 
-            return redirect()->route('papeis.index');
-        }
+//      if(Gate::denies('papel-create')){
+//        abort(403,"Não autorizado!");
+//      }
+      if($request['nome'] && $request['nome'] != "Admin"){
+          Papel::create($request->all());
 
-        return redirect()->back();
+          return redirect()->route('papeis.index');
+      }
+
+      return redirect()->back();
     }
 
     /**
@@ -76,7 +119,8 @@ class PapelController extends Controller {
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id) {
+    public function show($id)
+    {
         //
     }
 
@@ -86,20 +130,24 @@ class PapelController extends Controller {
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id) {
-        if (Papel::find($id)->nome == "Admin") {
-            return redirect()->route('papeis.index');
-        }
+    public function edit($id)
+    {
+//      if(Gate::denies('papel-edit')){
+//        abort(403,"Não autorizado!");
+//      }
+      if(Papel::find($id)->nome == "Admin"){
+          return redirect()->route('papeis.index');
+      }
 
-        $registro = Papel::find($id);
+      $registro = Papel::find($id);
 
-        $caminhos = [
-            ['url' => '/admin', 'titulo' => 'Admin'],
-            ['url' => route('papeis.index'), 'titulo' => 'Papéis'],
-            ['url' => '', 'titulo' => 'Editar']
-        ];
+      $caminhos = [
+      ['url'=>'/admin','titulo'=>'Admin'],
+      ['url'=>route('papeis.index'),'titulo'=>'Papéis'],
+      ['url'=>'','titulo'=>'Editar']
+      ];
 
-        return view('admin.papel.editar', compact('registro', 'caminhos'));
+      return view('admin.papel.editar',compact('registro','caminhos'));
     }
 
     /**
@@ -109,15 +157,20 @@ class PapelController extends Controller {
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id) {
-        if (Papel::find($id)->nome == "Admin") {
-            return redirect()->route('papeis.index');
-        }
-        if ($request['nome'] && $request['nome'] != "Admin") {
-            Papel::find($id)->update($request->all());
-        }
+    public function update(Request $request, $id)
+    {
+//      if(Gate::denies('papel-edit')){
+//        abort(403,"Não autorizado!");
+//      }
 
-        return redirect()->route('papeis.index');
+      if(Papel::find($id)->nome == "Admin"){
+          return redirect()->route('papeis.index');
+      }
+      if($request['nome'] && $request['nome'] != "Admin"){
+        Papel::find($id)->update($request->all());
+      }
+
+      return redirect()->route('papeis.index');
     }
 
     /**
@@ -126,12 +179,16 @@ class PapelController extends Controller {
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id) {
-        if (Papel::find($id)->nome == "Admin") {
-            return redirect()->route('papeis.index');
-        }
-        Papel::find($id)->delete();
-        return redirect()->route('papeis.index');
-    }
+    public function destroy($id)
+    {
+//      if(Gate::denies('papel-delete')){
+//        abort(403,"Não autorizado!");
+//      }
 
+      if(Papel::find($id)->nome == "Admin"){
+          return redirect()->route('papeis.index');
+      }
+      Papel::find($id)->delete();
+      return redirect()->route('papeis.index');
+    }
 }
