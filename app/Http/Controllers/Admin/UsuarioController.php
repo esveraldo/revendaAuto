@@ -4,19 +4,22 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-
 use App\User;
 use App\Papel;
+use Illuminate\Support\Facades\Gate;
 
-class UsuarioController extends Controller
-{
+class UsuarioController extends Controller {
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
-    {
+    public function index() {
+        if (Gate::denies('usuario-view')) {
+            abort(403, "Não autorizado!");
+        }
+
         $usuarios = User::all();
         $caminhos = [
             ['url' => '/admin', 'titulo' => 'Admin'],
@@ -24,9 +27,12 @@ class UsuarioController extends Controller
         ];
         return view('admin.usuarios.index', compact('usuarios', 'caminhos'));
     }
-    
-    public function papel($id)
-    {
+
+    public function papel($id) {
+        if (Gate::denies('papel-view')) {
+            abort(403, "Não autorizado!");
+        }
+
         $usuario = User::find($id);
         $papel = Papel::all();
         $caminhos = [
@@ -34,39 +40,43 @@ class UsuarioController extends Controller
             ['url' => route('usuarios.index'), 'titulo' => 'Usuarios'],
             ['url' => '', 'titulo' => 'Papel'],
         ];
-        
+
         return view('admin.usuarios.papel', compact('usuario', 'papel', 'caminhos'));
     }
-    
-    public function papelStore(Request $request, $id)
-    {
+
+    public function papelStore(Request $request, $id) {
+        if (Gate::denies('usuario-create')) {
+            abort(403, "Não autorizado!");
+        }
+
         $usuario = User::find($id);
         $dados = $request->all();
         $papel = Papel::find($dados['papel_id']);
         //Metodo no controller de model de usuario
         $usuario->adicionaPapel($papel);
-        
+
         return redirect()->back();
     }
-    
-    public function papelDestroy($id, $papel_id)
-    {
+
+    public function papelDestroy($id, $papel_id) {
+        if (Gate::denies('usuario-destroy')) {
+            abort(403, "Não autorizado!");
+        }
+
         $usuario = User::find($id);
         $papel = Papel::find($papel_id);
         //Metodo no controller de model de usuario
         $usuario->removePapel($papel);
-        
+
         return redirect()->back();
     }
-            
 
     /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
+    public function create() {
         //
     }
 
@@ -76,8 +86,7 @@ class UsuarioController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         //
     }
 
@@ -87,8 +96,7 @@ class UsuarioController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
-    {
+    public function show($id) {
         //
     }
 
@@ -98,8 +106,7 @@ class UsuarioController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
-    {
+    public function edit($id) {
         //
     }
 
@@ -110,8 +117,7 @@ class UsuarioController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         //
     }
 
@@ -121,8 +127,8 @@ class UsuarioController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
-    {
+    public function destroy($id) {
         //
     }
+
 }
